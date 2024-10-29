@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">QuizDroid</string>
+    <string name="your_answer">Your answer: %1$s</string>
+    <string name="btn_next">Next</string>
+    <string name="btn_finish">Finish</string>
+    <string name="correct_answer">Correct answer: %1$s</string>
+    <string name="score_count">You have %1$d out of %2$d correct</string>
+    <string name="total_questions_text">Total questions: %1$d</string>
+</resources>
