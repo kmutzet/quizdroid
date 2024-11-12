@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val topicsListView: ListView = findViewById(R.id.topicListView)
-        val topicsList = AllQuestions.topics.keys.toList()
+        val topicsList = QuizApp.repository.getAllTopics().map { it.title }
 
         topicsListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, topicsList)
         topicsListView.setOnItemClickListener { _, _, position, _ ->

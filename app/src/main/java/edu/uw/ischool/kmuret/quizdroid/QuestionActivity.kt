@@ -26,7 +26,8 @@ class QuestionActivity : AppCompatActivity() {
         questionInd = intent.getIntExtra("questionInd", 0)
         count = intent.getIntExtra("count", 0)
 
-        val question = AllQuestions.topics[selectedTopic]?.questions?.get(questionInd)
+        val topic = selectedTopic?.let { QuizApp.repository.getTopicByName(it) }
+        val quiz = topic?.quizzes?.get(questionInd)
 
         val tvQuestion: TextView = findViewById(R.id.tvQuestion)
         val radioGroup: RadioGroup = findViewById(R.id.radioGroup)
@@ -43,11 +44,11 @@ class QuestionActivity : AppCompatActivity() {
         val radioButton9: RadioButton = findViewById(R.id.radioButton9) */
         val btnSubmit: Button = findViewById(R.id.btnSubmit)
 
-        tvQuestion.text = question?.text
-        radioButton1.text = question?.options?.get(0)
-        radioButton2.text = question?.options?.get(1)
-        radioButton3.text = question?.options?.get(2)
-        radioButton4.text = question?.options?.get(3)
+        tvQuestion.text = quiz?.text
+        radioButton1.text = quiz?.options?.getOrNull(0)
+        radioButton2.text = quiz?.options?.getOrNull(1)
+        radioButton3.text = quiz?.options?.getOrNull(2)
+        radioButton4.text = quiz?.options?.getOrNull(3)
         //testing extra buttons show up
         //radioButton5.text = question?.options?.get(4)
         //radioButton6.text = question?.options?.get(5)
@@ -60,30 +61,21 @@ class QuestionActivity : AppCompatActivity() {
         }
 
         btnSubmit.setOnClickListener {
-            val selectedOption = radioGroup.checkedRadioButtonId
-            val correctAnswerIndex = question?.correctAnswer ?: -1
-
-            var isAnswerCorrect = false
-            var i = 0
-            val radioButtonIds = arrayOf(R.id.radioButton1, R.id.radioButton2, R.id.radioButton3, R.id.radioButton4)
-
-            while (i < 4) {
-                if (selectedOption == radioButtonIds[i]) {
-                    isAnswerCorrect = (correctAnswerIndex == i)
-                    break // exit loop if the correct answer is found
+            var selectedOptionInd = -1
+            val radioButtons = listOf(R.id.radioButton1, R.id.radioButton2, R.id.radioButton3, R.id.radioButton4)
+            for ((index, radioButtonId) in radioButtons.withIndex()) {
+                if (radioGroup.checkedRadioButtonId == radioButtonId) {
+                    selectedOptionInd = index
+                    break
                 }
-                i++
             }
 
-            if (isAnswerCorrect) {
-                count += 1
+            val intent = Intent(this, AnswerActivity::class.java).apply{
+                putExtra("selectedTopic", selectedTopic)
+                putExtra("questionInd", questionInd)
+                putExtra("selectedOption", selectedOptionInd)
+                putExtra("count", if (quiz?.correctAnswer == selectedOptionInd) count + 1 else count)
             }
-
-            val intent = Intent(this, AnswerActivity::class.java)
-            intent.putExtra("selectedTopic", selectedTopic)
-            intent.putExtra("questionInd", questionInd)
-            intent.putExtra("selectedOption", selectedOption)
-            intent.putExtra("count", count)
             startActivity(intent)
             finish()
         }
@@ -91,13 +83,16 @@ class QuestionActivity : AppCompatActivity() {
     }
 
     private fun edge() {
-        if (questionInd > 0) {
-            onBackPressedDispatcher.addCallback(this) {
-                val intent = Intent(this@QuestionActivity, QuestionActivity::class.java)
-                intent.putExtra("selectedTopic", selectedTopic)
-                intent.putExtra("questionInd", questionInd - 1)
-                intent.putExtra("count", count - 1)
+        onBackPressedDispatcher.addCallback(this) {
+            if (questionInd >0) {
+                val intent = Intent(this@QuestionActivity, QuestionActivity::class.java).apply {
+                    putExtra("selectedTopic", selectedTopic)
+                    putExtra("questionInd", questionInd - 1)
+                    putExtra("correctCount", count)
+                }
                 startActivity(intent)
+                finish()
+            } else {
                 finish()
             }
         }
