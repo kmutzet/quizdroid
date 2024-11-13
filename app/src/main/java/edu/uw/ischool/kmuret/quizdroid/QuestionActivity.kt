@@ -61,20 +61,22 @@ class QuestionActivity : AppCompatActivity() {
         }
 
         btnSubmit.setOnClickListener {
-            var selectedOptionInd = -1
-            val radioButtons = listOf(R.id.radioButton1, R.id.radioButton2, R.id.radioButton3, R.id.radioButton4)
-            for ((index, radioButtonId) in radioButtons.withIndex()) {
-                if (radioGroup.checkedRadioButtonId == radioButtonId) {
-                    selectedOptionInd = index
-                    break
-                }
+            val selectedOptionIndex = when (radioGroup.checkedRadioButtonId) {
+                R.id.radioButton1 -> 0
+                R.id.radioButton2 -> 1
+                R.id.radioButton3 -> 2
+                R.id.radioButton4 -> 3
+                else -> -1
             }
 
-            val intent = Intent(this, AnswerActivity::class.java).apply{
+            val intent = Intent(this, AnswerActivity::class.java).apply {
                 putExtra("selectedTopic", selectedTopic)
                 putExtra("questionInd", questionInd)
-                putExtra("selectedOption", selectedOptionInd)
-                putExtra("count", if (quiz?.correctAnswer == selectedOptionInd) count + 1 else count)
+                putExtra("selectedOption", selectedOptionIndex)
+                putExtra(
+                    "count",
+                    if (quiz?.correctAnswer?.minus(1) == selectedOptionIndex) count + 1 else count
+                )
             }
             startActivity(intent)
             finish()

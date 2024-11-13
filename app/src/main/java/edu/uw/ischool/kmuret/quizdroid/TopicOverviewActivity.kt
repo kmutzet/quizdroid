@@ -23,7 +23,7 @@ class TopicOverviewActivity : AppCompatActivity() {
         val btnBegin: Button = findViewById(R.id.btnBegin)
 
         tvTopicName.text = nextSelectedTopic?.title
-        tvTopicDescription.text = nextSelectedTopic?.longDescription
+        tvTopicDescription.text = nextSelectedTopic?.shortDescription
         tvTotalQuestions.text = getString(R.string.total_questions_text, nextSelectedTopic?.quizzes?.size ?: 0)
 
         btnBegin.setOnClickListener {

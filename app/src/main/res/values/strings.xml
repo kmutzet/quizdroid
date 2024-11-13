@@ -6,4 +6,8 @@
     <string name="correct_answer">Correct answer: %1$s</string>
     <string name="score_count">You have %1$d out of %2$d correct</string>
     <string name="total_questions_text">Total questions: %1$d</string>
+    <string name="download_frequency_hint">Download Frequency (Minutes)</string>
+    <string name="save">Save</string>
+    <string name="preferences">Preferences</string>
+    <string name="url_hint">Enter URL</string>
 </resources>

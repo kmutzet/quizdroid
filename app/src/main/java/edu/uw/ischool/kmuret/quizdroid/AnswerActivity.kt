@@ -28,21 +28,14 @@ class AnswerActivity : AppCompatActivity() {
 
         val topic = selectedTopic?.let { QuizApp.repository.getTopicByName(it) }
         val quiz = topic?.quizzes?.get(questionInd)
-        val correctAnswerInd = quiz?.correctAnswer ?: -1
-        val correctAnswer = quiz?.options?.get(correctAnswerInd)
+        val correctAnswerInd = quiz?.correctAnswer?.minus(1) ?: -1
+        val correctAnswer = quiz?.options?.getOrNull(correctAnswerInd)
 
         tvYourAnswer.text = getString(R.string.your_answer, quiz?.options?.get(selectedOption))
         tvCorrectAnswer.text = getString(R.string.correct_answer, correctAnswer)
         tvScore.text = getString(R.string.score_count, count, questionInd + 1)
 
-        val isNextQuestionAvailable: Boolean
         if ((questionInd + 1) < (topic?.quizzes?.size ?: 0)) {
-            isNextQuestionAvailable = true
-        } else {
-            isNextQuestionAvailable = false
-        }
-
-        if (isNextQuestionAvailable) {
             btnNextOrFinish.text = getString(R.string.btn_next)
             btnNextOrFinish.setOnClickListener {
                 val intent = Intent(this, QuestionActivity::class.java).apply {
@@ -56,8 +49,6 @@ class AnswerActivity : AppCompatActivity() {
         } else {
             btnNextOrFinish.text = getString(R.string.btn_finish)
             btnNextOrFinish.setOnClickListener {
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
                 finish()
             }
         }
