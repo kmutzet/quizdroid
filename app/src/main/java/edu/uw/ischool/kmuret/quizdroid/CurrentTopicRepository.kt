@@ -18,7 +18,7 @@ class CurrentTopicRepository(private val context: Context) : TopicRepository {
 
     override suspend fun fetchTopics() {
         try {
-            val inputStream = context.assets.open("ecquestions.json")
+            val inputStream = context.assets.open("questions.json")
             val size = inputStream.available()
             val buffer = ByteArray(size)
             inputStream.read(buffer)

@@ -2,19 +2,20 @@ package edu.uw.ischool.kmuret.quizdroid
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import android.content.Intent
-import android.view.Menu
-import android.view.MenuItem
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.withContext
 import android.content.Context
+import android.net.ConnectivityManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import android.provider.Settings
+import androidx.appcompat.app.AlertDialog
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
+import androidx.work.Constraints
 
 class PreferencesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,8 +38,49 @@ class PreferencesActivity : AppCompatActivity() {
                 putInt("DownloadFrequency", downloadFrequency)
                 apply()
             }
+            checkoutNetworkAndProceed(downloadFrequency)
+        }
+    }
+
+    private fun checkoutNetworkAndProceed(downloadFrequency: Int) {
+        if (isAirplaneModeOn()) {
+            promptForAirplaneMode()
+        } else if (!isNetworkAvailable()) {
+            Toast.makeText(this, "No network connection available", Toast.LENGTH_LONG).show()
+        } else {
+            initiateDownloadWorker(downloadFrequency)
             Toast.makeText(this, "Preferences saved", Toast.LENGTH_SHORT).show()
             finish()
         }
+    }
+    private fun isAirplaneModeOn(): Boolean {
+        return Settings.Global.getInt(contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) != 0
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo?.isConnectedOrConnecting == true
+    }
+
+    private fun promptForAirplaneMode() {
+        AlertDialog.Builder(this)
+            .setTitle("Airplane Mode Active")
+            .setMessage("Airplane mode is on. Do you want to disable it?")
+            .setPositiveButton("Yes") { _, _ ->
+                startActivity(Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS))
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    fun initiateDownloadWorker(frequency: Int) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val downloadRequest = PeriodicWorkRequestBuilder<DownloadWorker>(frequency.toLong(), TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("downloadWork", ExistingPeriodicWorkPolicy.KEEP, downloadRequest)
     }
 }

@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "edu.uw.ischool.kmuret.quizdroid"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "edu.uw.ischool.kmuret.quizdroid"
         minSdk = 28
-        targetSdk = 34
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -2,7 +2,8 @@ package edu.uw.ischool.kmuret.quizdroid
 
 import android.app.Application
 import android.util.Log
-
+import android.content.Context
+import java.util.concurrent.TimeUnit
 class QuizApp : Application() {
     companion object {
         lateinit var repository: TopicRepository

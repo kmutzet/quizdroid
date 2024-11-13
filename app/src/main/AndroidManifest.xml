@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:name=".QuizApp"
         android:allowBackup="true"
@@ -14,6 +16,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Quizdroid"
         tools:targetApi="31">
+        <service
+            android:name=".DownloadWorker"
+            android:exported="false" >
+        </service>
         <activity android:name=".PreferencesActivity"/>
         <activity android:name=".QuestionActivity"/>
         <activity android:name=".TopicOverviewActivity"/>
