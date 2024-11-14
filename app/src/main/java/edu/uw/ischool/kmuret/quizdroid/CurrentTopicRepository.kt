@@ -19,11 +19,14 @@ class CurrentTopicRepository(private val context: Context) : TopicRepository {
     override suspend fun fetchTopics() {
         try {
             val inputStream = context.assets.open("questions.json")
+            val assetFiles = context.assets.list("")?.joinToString(", ")
+            Log.d("CurrentTopicRepository", "Assets files: $assetFiles")
             val size = inputStream.available()
             val buffer = ByteArray(size)
             inputStream.read(buffer)
             inputStream.close()
             val jsonString = String(buffer, Charsets.UTF_8)
+            Log.d("CurrentTopicRepository", "JSON String: $jsonString")
 
             val jsonArray = JSONArray(jsonString)
             val newTopics = mutableListOf<Topic>()
@@ -34,6 +37,7 @@ class CurrentTopicRepository(private val context: Context) : TopicRepository {
                 val longDescription = ""
 
                 val jsonQuestions = jsonTopic.getJSONArray("questions")
+                Log.d("CurrentTopicRepository", "Topic: $title, Questions: ${jsonQuestions.length()}")
                 val quizzes = mutableListOf<Quiz>()
 
                 for (j in 0 until jsonQuestions.length()) {
@@ -52,6 +56,7 @@ class CurrentTopicRepository(private val context: Context) : TopicRepository {
                 newTopics.add(Topic(title, shortDescription, longDescription, quizzes))
             }
 
+            Log.d("CurrentTopicRepository", "Total Topics Loaded: ${newTopics.size}")
             topics.clear()
             topics.addAll(newTopics)
         } catch (e: IOException) {

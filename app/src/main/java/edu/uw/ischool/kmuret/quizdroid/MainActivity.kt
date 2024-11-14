@@ -15,6 +15,7 @@ import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import android.util.Log
 import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
@@ -49,11 +50,13 @@ class MainActivity : AppCompatActivity() {
 
         listViewTopics.setOnItemClickListener { _, _, position, _ ->
             val chosenTopic = (listViewTopics.adapter.getItem(position) as String)
+            Log.d("MainActivity", "Chosen Topic: $chosenTopic")  // Log the selected topic to verify
             val intent = Intent(this, TopicOverviewActivity::class.java).apply {
-                putExtra("chosenTopic", chosenTopic)
+                putExtra("selectedTopic", chosenTopic)  // Ensure the key matches what's used in TopicOverviewActivity
             }
             startActivity(intent)
         }
+
 
         registerReceiver(updateReceiver, IntentFilter("DATA_REFRESHED"))
         registerReceiver(errorReceiver, IntentFilter("DOWNLOAD_ERROR"))
@@ -121,7 +124,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun attemptDownloadAgain() {
         val sharedPrefs = getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
-        val downloadInterval = sharedPrefs.getInt("DownloadInterval", 60)
-        PreferencesActivity().initiateDownloadWorker(downloadInterval)
+        val downloadInterval = sharedPrefs.getInt("DownloadInterval", 1)
+        PreferencesActivity().initiateDownloadWorker()
     }
 }

@@ -11,46 +11,53 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
-
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        Log.d("DownloadWorker", "Download worker started")
+
         try {
-            // Get download URL and send download attempt broadcast
-            val sharedPreferences = applicationContext.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
-            val urlString = sharedPreferences.getString("URL", "defaultURL") ?: "defaultURL"
-            applicationContext.sendBroadcast(Intent("DOWNLOAD_ATTEMPT"))
+            // Use the hardcoded test URL for testing
+            val urlString = "http://tednewardsandbox.site44.com/questions.json"
+            Log.d("DownloadWorker", "Downloading from URL: $urlString")
 
             // Check network and airplane mode
             if (!isNetworkAvailable() || isAirplaneModeOn()) {
-                return@withContext Result.retry()
+                Log.d("DownloadWorker", "Network unavailable or Airplane mode on, retrying")
+                return@withContext Result.retry()  // Retry if conditions aren't met
             }
 
             // Download the file
             val tempFile = File(applicationContext.filesDir, "questions_temp.json")
             downloadFile(urlString, tempFile)
 
-            // Rename to final file if download succeeds
+            // Rename the temp file to the final file
             val finalFile = File(applicationContext.filesDir, "questions.json")
-            if (!tempFile.renameTo(finalFile)) throw IOException("Failed to save downloaded file")
+            if (!tempFile.renameTo(finalFile)) {
+                Log.e("DownloadWorker", "Failed to rename file to questions.json")
+                throw IOException("Failed to save downloaded file")
+            }
 
-            Log.d("DownloadWorker", "Download complete and file saved")
+            Log.d("DownloadWorker", "Download complete and file saved as questions.json")
+
+            // Send broadcast to indicate data update
             applicationContext.sendBroadcast(Intent("DATA_UPDATED"))
-
             Result.success()
+
         } catch (e: Exception) {
-            Log.e("DownloadWorker", "Download error: ${e.message}")
+            Log.e("DownloadWorker", "Download failed: ${e.message}")
             applicationContext.sendBroadcast(Intent("DOWNLOAD_FAILED"))
-            Result.failure()
+            return@withContext Result.failure()  // Return failure if any error occurs
         }
     }
+
 
     private fun downloadFile(urlString: String, outputFile: File) {
         val url = URL(urlString)
@@ -58,14 +65,16 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
         connection.connect()
 
         if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-            throw IOException("HTTP error code: ${connection.responseCode}")
+            throw IOException("HTTP error code connection error for download: ${connection.responseCode}")
         }
 
+        // Download the file to the temp file
         connection.inputStream.use { inputStream ->
             FileOutputStream(outputFile).use { outputStream ->
                 inputStream.copyTo(outputStream)
             }
         }
+        Log.d("DownloadWorker", "File downloaded, renaming to questions.json")
         showNotification("Download Complete", "Data has been successfully downloaded.")
     }
 
@@ -81,6 +90,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
+
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
